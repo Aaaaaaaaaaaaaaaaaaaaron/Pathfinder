@@ -1,70 +1,64 @@
 from machine import Pin, PWM, ADC
 import time
-
+ 
 # Pinbelegung für den Joystick
-VRX_PIN = 25  # GPIO39 (ADC3) für VRX
-VRY_PIN = 26  # GPIO36 (ADC0) für VRY
-SW_PIN = 17   # GPIO17 für den Button (falls benötigt)
+VRX_PIN = 12  # GPIO39 (ADC3) für VRX
+VRY_PIN = 14  # GPIO36 (ADC0) für VRY
+SW_PIN = 27   # GPIO17 für den Button
 
-# Motorsteuerungs-Pins (angepasst an dein Setup)
-MOTOR1_FORWARD = 25  # GPIO25 für Motor 1 vorwärts
-MOTOR1_BACKWARD = 26 # GPIO26 für Motor 1 rückwärts
-MOTOR2_FORWARD = 27  # GPIO27 für Motor 2 vorwärts
-MOTOR2_BACKWARD = 14 # GPIO14 für Motor 2 rückwärts
+VRX2_PIN = 26  # 
+VRY2_PIN = 25  # 
+SW2_PIN = 33   # nicht aktiviert
 
 # Initialisierung der Joystick-Pins
 vrx = ADC(Pin(VRX_PIN))
 vry = ADC(Pin(VRY_PIN))
 vrx.atten(ADC.ATTN_11DB)
 vry.atten(ADC.ATTN_11DB)
-
-# Initialisierung der Motorsteuerung
-motor1_forward = PWM(Pin(MOTOR1_FORWARD), freq=1000)
-motor1_backward = PWM(Pin(MOTOR1_BACKWARD), freq=1000)
-motor2_forward = PWM(Pin(MOTOR2_FORWARD), freq=1000)
-motor2_backward = PWM(Pin(MOTOR2_BACKWARD), freq=1000)
-
-# Funktion zum Stoppen aller Motoren
-def stop_motors():
-    motor1_forward.duty(0)
-    motor1_backward.duty(0)
-    motor2_forward.duty(0)
-    motor2_backward.duty(0)
-
-# Funktion zum Vorwärtsfahren
-def move_forward(speed):
-    motor1_forward.duty(speed)
-    motor1_backward.duty(0)
-    motor2_forward.duty(speed)
-    motor2_backward.duty(0)
-
+ 
+# Initialisierung der Joystick-Pins
+vrx2 = ADC(Pin(VRX2_PIN))
+vry2 = ADC(Pin(VRY2_PIN))
+vrx2.atten(ADC.ATTN_11DB)
+vry2.atten(ADC.ATTN_11DB)
+ 
 # Schwellenwert für Joystick
-JOYSTICK_THRESHOLD = 2750
-
+JOYSTICK_THRESHOLD = 1750
+JOYSTICK_THRESHOLD2 = 1750
+ 
 # Hauptloop
 while True:
     # Joystick-Werte lesen
     x_value = vrx.read()
     y_value = vry.read()
-
+    x_value2 = vrx2.read()
+    y_value2 = vry2.read()
+ 
     # Debug-Ausgabe (optional)
-    print(f"Joystick X: {x_value}, Y: {y_value}")
-
+    print(f"Joystick 1: {x_value}, Y: {y_value}")
+    print(f"Joystick 2: {x_value2}, Y: {y_value2}")
+    
     # Bedingung: Joystick-Werte über dem Schwellenwert
     if x_value >= JOYSTICK_THRESHOLD or x_value <= JOYSTICK_THRESHOLD:
         # Bedingung: Joystick ganz nach vorne gedrückt
-        if x_value > 2850:  # Schwellenwert für "nach vorne" (anpassen, falls nötig)
-            print("Joystick nach vorne gedrückt! Auto bewegt sich vorwärts.")
-            move_forward(512)  # Geschwindigkeit einstellen (0-1023)
-        elif x_value < 2650:
-            print("Auto fährt rückwärts")
+        if x_value > 1850:  # Schwellenwert für "nach vorne" (anpassen, falls nötig)
+            print("motor1 vorwärts.")
+            
+        elif x_value < 1650:
+            print("motor1 rückwärts")
+        
+        if x_value2 > 1850:  # Schwellenwert für "nach vorne" (anpassen, falls nötig)
+            print("motor2 vorwärts.")
+            
+        elif x_value2 < 1650:
+            print("motor2 rückwärts")
         else:
-            print("Joystick nicht nach vorne oder hinten. Auto stoppt.")
-            stop_motors()
-    
-    
-    else:
-        print("Joystick innerhalb des Totbereichs. Auto stoppt.")
-        stop_motors()
+            print("Auto steht.")
+            
 
+    else:
+        print("Joystick innerhalb des Totbereichs.")
+       
+ 
     time.sleep(0.1)  # Kleines Delay für Stabilität
+
