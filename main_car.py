@@ -69,28 +69,37 @@ def on_receive_callback(e):
     if msg:  # Check if message is not None
         command = msg.decode('utf-8')
         if command == 'forward':
-            motor_left.forward(100)
-            motor_right.forward(100)
+            motor_left.forward(30)
+            motor_right.forward(30)
         elif command == 'backward':
-            motor_left.backward(100)
-            motor_right.backward(100)
+            motor_left.backward(40)
+            motor_right.backward(40)
         elif command == 'stop':
             motor_left.stop()
             motor_right.stop()
         elif command == "left":
-            motor_left.backward(100)
-            motor_right.forward(100)
+            motor_left.backward(50)
+            motor_right.forward(50)
         elif command == "right":
-            motor_left.forward(100)
-            motor_right.backward(100)
+            motor_left.forward(50)
+            motor_right.backward(50)
+        elif command == "m1v":
+            motor_left.forward(60)
+        elif command == "m1r":
+            motor_left.backward(60)
+        elif command == "m2v":
+            motor_right.forward(60)
+        elif command == "m2r":
+            motor_right.backward(60)
 
 # Main loop
 def main():
     while True:
         on_receive_callback(e)  # Check for received messages
-        time.sleep(0.2)
+        time.sleep(0.1)
 
 if __name__ == "__main__":
     main()
+
 
 
