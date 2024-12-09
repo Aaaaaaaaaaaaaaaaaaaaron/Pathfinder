@@ -4,7 +4,6 @@ import espnow
 import machine
 import time
 from machine import Pin, PWM
-#	 from espnow import init
 
 # Motor 1 (left) setup
 class DCMotor:
@@ -63,43 +62,54 @@ e.active(True)
 peer = b'\x1c\x69\x20\xcd\x57\xe4'
 e.add_peer(peer)
 
+# Threshold values for joystick neutral position (adjustable)
+NEUTRAL_LOW = 1700
+NEUTRAL_HIGH = 1900
+
 # Define the callback for receiving data
 def on_receive_callback(e):
     sender_mac, msg = e.irecv()
     if msg:  # Check if message is not None
-        command = msg.decode('utf-8')
-        if command == 'forward':
-            motor_left.forward(30)
-            motor_right.forward(30)
-        elif command == 'backward':
-            motor_left.backward(40)
-            motor_right.backward(40)
-        elif command == 'stop':
-            motor_left.stop()
-            motor_right.stop()
-        elif command == "left":
-            motor_left.backward(50)
-            motor_right.forward(50)
-        elif command == "right":
-            motor_left.forward(50)
-            motor_right.backward(50)
-        elif command == "m1v":
-            motor_left.forward(60)
-        elif command == "m1r":
-            motor_left.backward(60)
-        elif command == "m2v":
-            motor_right.forward(60)
-        elif command == "m2r":
-            motor_right.backward(60)
+        try:
+            # Decode and parse the received message
+            x1, x2 = map(int, msg.decode('utf-8').split(','))
+            print(f"Received x1: {x1}, x2: {x2}")
+
+            # Control motor 1 (left) based on x1
+            if x1 < NEUTRAL_LOW:
+                speed = int((NEUTRAL_LOW - x1) / (NEUTRAL_LOW) * 100)
+                motor_left.backward(speed)
+                print(f"Motor 1 backward with speed {speed}")
+            elif x1 > NEUTRAL_HIGH:
+                speed = int((x1 - NEUTRAL_HIGH) / (4095 - NEUTRAL_HIGH) * 100)
+                motor_left.forward(speed)
+                print(f"Motor 1 forward with speed {speed}")
+            else:
+                motor_left.stop()
+                print("Motor 1 stop")
+
+            # Control motor 2 (right) based on x2
+            if x2 < NEUTRAL_LOW:
+                speed = int((NEUTRAL_LOW - x2) / (NEUTRAL_LOW) * 100)
+                motor_right.backward(speed)
+                print(f"Motor 2 backward with speed {speed}")
+            elif x2 > NEUTRAL_HIGH:
+                speed = int((x2 - NEUTRAL_HIGH) / (4095 - NEUTRAL_HIGH) * 100)
+                motor_right.forward(speed)
+                print(f"Motor 2 forward with speed {speed}")
+            else:
+                motor_right.stop()
+                print("Motor 2 stop")
+        except ValueError:
+            print("Invalid data received")
 
 # Main loop
 def main():
     while True:
         on_receive_callback(e)  # Check for received messages
         time.sleep(0.1)
+        motor_left.stop()
+        motor_right.stop()
 
 if __name__ == "__main__":
     main()
-
-
-
